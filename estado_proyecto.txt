@@ -1,0 +1,20 @@
+Proyecto Lab4 
+
+1) Que es este proyecto?
+Es un pequeno computador de 32 bits construido dentro de la tarjeta Nexys 4 DDR. Usa el modulo `rv32i_core.sv` para leer un programa guardado en la ROM, ejecuta esas instrucciones a 10 MHz y conversa con memorias y perifericos a traves de direcciones fijadas. Todo el cableado sintetizable vive en `lab4_pcpi/lab4_pcpi.srcs/sources_1/new/top_pcpi_led_fpga.sv`, que conecta reloj, botones, switches, LEDs, displays de siete segmentos, el temporizador y el sensor de temperatura.
+
+2) Componentes que ya funcionan
+- Memorias: la ROM de instrucciones (0x0000-0x0FFF) se llena con `firmware/firmware.hex` y la RAM local guarda datos del programa. El mapa sigue lo indicado en `docs/Proyectos_laboratorio4_EL3313_proyecto.pdf`: entradas 0x2000, LEDs 0x2004, display 0x2008, timer 0x2018/0x201C y sensor 0x2030/0x2034.
+- Procesador: `rv32i_core.sv` entiende la mayor parte del conjunto RV32I (suma/resta, operaciones logicas, desplazamientos, comparaciones, saltos y branches) y administra 32 registros internos. El bus de datos se arbitra dentro del toplevel para decidir cuando hablar con la RAM o con cada periferico.
+- Temporizador: `timer_peripheral.sv` cuenta pulsos de 10 MHz, expone un bit de estado cuando termina e incluye registros de control y periodo que se ven desde la direccion 0x2018 y 0x201C.
+- Sensor de temperatura: `temp_sensor_xadc.sv` lee el sensor interno mediante el XADC de Xilinx, convierte el codigo crudo a decimas de grado Celsius y deja el resultado listo en 0x2034. El registro 0x2030 permite arrancar o limpiar una conversion.
+- Entradas y salidas: `io_sync_debounce.sv` filtra rebotes de switches y botones; `seven_seg_driver.sv` multiplexa los ocho digitos del display; las 16 salidas LED se actualizan escribiendo un valor de 16 bits.
+- Firmware: `firmware/firmware_pcpi.asm` configura las direcciones base (x20-x26), toma los cuatro switches mas bajos para decidir el intervalo (1, 2, 5 o 10 s), programa el temporizador, espera a que termine, arranca una medicion de temperatura, convierte el resultado a BCD y lo envuelve en nibbles para el registro del display. Mientras tanto usa los tres primeros LEDs como testigos de estado (esperando timer, leyendo sensor, dato listo).
+
+3) Flujo de trabajo actual
+Para probar cambios se puede volver a ensamblar el firmware (`python firmware/assemble_firmware.py`), simular con `sim/tb_unified_pcpi.sv` o abrir directamente el proyecto de Vivado `lab4_pcpi/lab4_pcpi.xpr` para sintetizar y programar la tarjeta. El testbench ayuda a revisar la logica del coprocesador PCPI heredado, y el toplevel ya conecta todos los IP de memoria y perifericos listos para implementarse en hardware.
+
+4) Que falta segun el documento Proyectos_laboratorio4_EL3313_proyecto.pdf
+- Memoria de datos completa: el documento pide que la ventana de RAM vaya de 0x1000 a 0x1FFF (256 palabras). En `top_pcpi_led_fpga.sv` el limite actual esta fijado en 0x0000_1400, por lo que solo hay 1 KiB adresable y quedan sin cubrir las direcciones 0x1400-0x1FFF. Se debe ampliar el IP de RAM y los calculos de direcciones para cumplir el mapa oficial.
+- Sensor de temperatura en la FPGA: el PDF exige exponer la medicion del TMP mapeada en 0x2030/0x2034, y eso ya se hace con `temp_sensor_xadc.sv`, que usa el XADC interno de la Nexys 4 DDR. Solo falta documentar la calibracion final (por ejemplo, comparando contra un termometro externo) para demostrar que el valor en decimas de grado coincide con lo especificado.
+- Validacion final en hardware: el documento solicita evidencia de funcionamiento en la Nexys 4 DDR (mediciones reales, captura de displays/LEDs y reporte de tiempos). Todavia no hay registros ni capturas en el repositorio, por lo que hace falta sintetizar, descargar el bitstream y documentar el resultado antes de cerrar el proyecto.
