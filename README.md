@@ -7,7 +7,7 @@
 ![Vivado](https://img.shields.io/badge/Vivado-2025.1-red?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-**Laboratorio 4 - EL3313 Arquitectura de Computadoras**  
+**Laboratorio 4**  
 Instituto Tecnológico de Costa Rica
 
 </div>
@@ -468,12 +468,12 @@ program_hw_devices [get_hw_devices xc7a*]
 
 ##  Licencia
 
-Este proyecto fue desarrollado con fines educativos como parte del curso EL3313 en el Instituto Tecnológico de Costa Rica.
+Este proyecto fue desarrollado con fines educativos como parte del curso Taller de sistemas digitals en el Instituto Tecnológico de Costa Rica.
 
 ```
 MIT License
 
-Copyright (c) 2025 Equipo Lab 4 - EL3313
+Copyright (c) 2025 Equipo Lab 4 - 
 
 Se concede permiso para usar, copiar, modificar y distribuir este software
 con fines educativos.
